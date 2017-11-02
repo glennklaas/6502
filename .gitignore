@@ -1,5 +1,6 @@
 # build
 *.o
-
-backup
+*.lst
+*.bin
+backups
 nongitdocs
