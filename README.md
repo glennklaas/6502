@@ -9,6 +9,7 @@ Description: This monitor is for a 65C02 based single board computer with an MC6
 - C000-FFFF  ROM 16K
 
 A15|A14|A13
+------------ | -------------
 0|0|0
 0|1|1
 1|0|0
