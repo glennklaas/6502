@@ -1,6 +1,6 @@
 # GAKSBC - Single Board Computer 
 
-Description: This monitor is for a 65C02 based single board computer with an MC68B50P ACIA, 32K ROM and 32K RAM.  The memory layout is as follows:
+Description: This monitor is for a 65C02 based single board computer with an MC68B50P ACIA, 32K ROM and 32K RAM.  
 
 **Memory Map: Decoding - Usage**
 
