@@ -1,4 +1,4 @@
-ca65 V2.16 - Git 6de78c5
+ca65 V2.13.3 - (C) Copyright 1998-2012 Ullrich von Bassewitz
 Main file   : gaksbc.s
 Current file: gaksbc.s
 
@@ -58,11 +58,11 @@ Current file: gaksbc.s
 00C006  1  8D 00 A0     	STA ACIAControl		;INITIALIZE THE ACIA
 00C009  1               
 00C009  1               ;DISPLAY WELCOME MESSAGE
-00C009  1  A9 1E        	LDA #<MSG1		;DETERMINE LOW
+00C009  1  A9 26        	LDA #<MSG1		;DETERMINE LOW
 00C00B  1  85 18        	STA STRL		;SET LOW
 00C00D  1  A9 C1        	LDA #>MSG1		;DETERMINE HI
 00C00F  1  85 19        	STA STRH		;SET HI
-00C011  1  20 06 C1        	JSR SHWMSG		;SHOW WELCOME
+00C011  1  20 0E C1        	JSR SHWMSG		;SHOW WELCOME
 00C014  1               
 00C014  1               ;-------------------------------------------------------------------------
 00C014  1               ;  COMMAND INPUT PROCESSING
@@ -77,21 +77,21 @@ Current file: gaksbc.s
 00C01F  1  10 17        	BPL NEXTCHAR   		;IF LINE LONGER THAN 127 FALL THRU
 00C021  1               
 00C021  1  A9 2A        ESCAPE:	LDA #PROMPT    		;PRINT PROMPT CHARACTER
-00C023  1  20 00 C1     	JSR ECHO       		;OUTPUT IT
+00C023  1  20 08 C1     	JSR ECHO       		;OUTPUT IT
 00C026  1               
-00C026  1  20 13 C1     GETLINE: JSR CRLF		;SEND CRLF TO SCREEN
+00C026  1  20 1B C1     GETLINE: JSR CRLF		;SEND CRLF TO SCREEN
 00C029  1               
 00C029  1  A0 01        	LDY #$01       		;INITIALIZE TEXT INDEX
 00C02B  1  88           BAKSPACE: DEY
 00C02C  1  30 F8        	BMI GETLINE    		;REINIT BEYOND START OF LINE
 00C02E  1  A9 20        	LDA #' '       		;SPACE, OVERWITE CHAR
-00C030  1  20 00 C1     	JSR ECHO
+00C030  1  20 08 C1     	JSR ECHO
 00C033  1  A9 08        	LDA #BS        		;BACKSPACE AGAIN
-00C035  1  20 00 C1     	JSR ECHO
+00C035  1  20 08 C1     	JSR ECHO
 00C038  1               
 00C038  1  20 1F FF     NEXTCHAR: JSR RDKEY    		;WAIT FOR KEYPRESS
 00C03B  1  99 00 02     	STA IN,Y       		;ADD TO TEXT BUFFER
-00C03E  1  20 00 C1     	JSR ECHO       		;DISPLAY CHARACTER
+00C03E  1  20 08 C1     	JSR ECHO       		;DISPLAY CHARACTER
 00C041  1               	;JSR PRBYTE    		;DEBUG - PRINT HEX KEYVALUE
 00C041  1  C9 0D        	CMP #CR        		;CR?
 00C043  1  D0 D1        	BNE NOTCR      		;NO.
@@ -107,180 +107,184 @@ Current file: gaksbc.s
 00C04A  1  0A           SETSTOR: ASL			;LEAVES $74 IF SETTING STOR MODE
 00C04B  1               
 00C04B  1  85 17        SETMODE: STA MODE		;SET MODE FLAGS
-00C04D  1               
-00C04D  1  C8           BLSKIP:	INY			;ADVACE TEXT INDEX
-00C04E  1               
-00C04E  1  B9 00 02     NEXTITEM: LDA IN,Y		;GET CHARACTER
-00C051  1  C9 0D        	CMP #CR
-00C053  1  F0 D1        	BEQ GETLINE		;WE'RE DONE IF IT'S CR!
-00C055  1  C9 2E        	CMP #'.'		; $2E 00101110
-00C057  1  90 F4        	BCC BLSKIP		;IGNORE EVERYTHING LESS THAN "."!
-00C059  1  F0 F0        	BEQ SETMODE		;IF EQ, SET BLOCK XAM MODE ("."=$2E)
-00C05B  1  C9 3A        	CMP #':'		; $3A 00111010
-00C05D  1  F0 EB        	BEQ SETSTOR		;SET STOR MODE! #$3A WILL BECOM $74
-00C05F  1  C9 52        	CMP #'R'
-00C061  1  F0 3E        	BEQ RUN			;RUN THE PROGRAM! FORGET THE REST
-00C063  1  86 14        	STX L			;CLEAR INPUT VALUE (X=0)
-00C065  1  86 15        	STX H
-00C067  1  84 16        	STY YSAV		;SAVE Y FOR COMPARISON
-00C069  1               
-00C069  1               ; HERE WE'RE TRYING TO PARSE A NEW HEX VALUE
-00C069  1               
-00C069  1  B9 00 02     NEXTHEX: LDA IN,Y		;GET CHARACTER FOR HEX TEST
-00C06C  1  49 30        	EOR #$30		;MAP DIGITS 0-9
-00C06E  1  C9 0A        	CMP #$0A		;IS IT A DECIMAL DIGIT?
-00C070  1  90 06        	BCC DIG			;YES, PROCESS THE DIGIT
-00C072  1  69 88        	ADC #$88		;MAP LETTER "A"-"F" TO $FA-FF
-00C074  1  C9 FA        	CMP #$FA		;IS IT A HEX LETTER?
-00C076  1  90 11        	BCC NOTHEX		;NO, CHARACTER NOT HEX OR CONTINUE
-00C078  1               
-00C078  1  0A           DIG:	ASL
-00C079  1  0A           	ASL			;HEX DIGIT TO MSD OF A
-00C07A  1  0A           	ASL
-00C07B  1  0A           	ASL
-00C07C  1               
-00C07C  1  A2 04        	LDX #$04		;SHIFT COUNT
-00C07E  1  0A           HEXSHIFT: ASL			;HEX DIGIT LEFT, MSB TO CARRY
-00C07F  1  26 14        	ROL L			;ROTATE INTO LSD
-00C081  1  26 15        	ROL H			;ROTATE INTO MSD'S
-00C083  1  CA           	DEX			;DONE 4 SHIFTS?
-00C084  1  D0 F8        	BNE HEXSHIFT		;NO, LOOP
-00C086  1  C8           	INY			;ADVANCE TEXT INDEX
-00C087  1  D0 E0        	BNE NEXTHEX		;ALWAYS TAKEN
-00C089  1               
-00C089  1  C4 16        NOTHEX:	CPY YSAV		;WAS AT LEAST 1 HEX DIGIT GIVEN?
-00C08B  1  D0 03        	BNE NOESCAPE		;NO! IGNORE ALL,START FROM SCRATCH
-00C08D  1  4C 21 C0     	JMP ESCAPE
-00C090  1               
-00C090  1  24 17        NOESCAPE: BIT MODE
-00C092  1  50 16        	BVC NOTSTOR
-00C094  1  A5 14        	LDA L			;LSD'S OF HEX DATA
-00C096  1  81 12        	STA (STL,X)		;STORE CUR 'STORE INDEX'(X=0)
-00C098  1  E6 12        	INC STL			;INCREMENT STORE INDEX
-00C09A  1  D0 B2        	BNE NEXTITEM		;NO CARRY!
-00C09C  1  E6 13        	INC STH			;ADD CARRY TO 'STORE INDEX' HIGH
-00C09E  1  4C 4E C0     TONXTITM: JMP NEXTITEM		;GET NEXT COMMAND ITEM
-00C0A1  1               
-00C0A1  1               ;-------------------------------------------------------------------------
-00C0A1  1               ;  RUN USERS PROGRAM FROM THE LAST OPENED LOCATION
-00C0A1  1               ;-------------------------------------------------------------------------
-00C0A1  1               
-00C0A1  1  20 A7 C0     RUN:	JSR ACTRUN		;RUN USER'S PRORAM
-00C0A4  1  4C 14 C0     	JMP SFTRST		;SOFT RESET ON RETURN
-00C0A7  1               
-00C0A7  1  6C 10 00     ACTRUN:	JMP (XAML)
-00C0AA  1               
-00C0AA  1               ;-------------------------------------------------------------------------
-00C0AA  1               ;  We're not in Store mode
-00C0AA  1               ;-------------------------------------------------------------------------
-00C0AA  1               
-00C0AA  1  30 29        NOTSTOR:	BMI XAMNEXT	;B7=0 FOR XAM, 1 FOR BLOCK XAM
-00C0AC  1               
-00C0AC  1               ;WE'RE IN XAM MODE NOW
-00C0AC  1               
-00C0AC  1  A2 02        	LDX #$02		;COPY 2 BYTES
-00C0AE  1  B5 13        SETADR:	LDA L-1,X		;COPY HEX DATA TO
-00C0B0  1  95 11        	STA STL-1,X		;store index'
-00C0B2  1  95 0F        	STA XAML-1,X		;AND TO 'XAM INDEX'
-00C0B4  1  CA           	DEX			;NEXT OF 2 BYTES
-00C0B5  1  D0 F7        	BNE SETADR		;LOOP UNLESS X=0
-00C0B7  1               
-00C0B7  1               ; PRINT ADDR & DATA FROM THIS ADDR, FALL THRU NEXT BNE
-00C0B7  1               
-00C0B7  1  D0 12        NXTPRNT:	BNE PRDATA	;NE MEANS NO ADDRESS TO PRINT
-00C0B9  1  20 13 C1     	JSR CRLF
-00C0BC  1  A5 11        	LDA XAMH		;OUTPUT HIGH-ORDER BYTE OF ADDR
-00C0BE  1  20 ED C0     	JSR PRBYTE
-00C0C1  1  A5 10        	LDA XAML		;OUTPUT LOW-ORDER BYTE OF ADDR
-00C0C3  1  20 ED C0     	JSR PRBYTE
-00C0C6  1  A9 3A        	LDA #':'		;PRINT COLON
-00C0C8  1  20 00 C1     	JSR ECHO
-00C0CB  1               
-00C0CB  1  A9 20        PRDATA:	LDA #' '		;PRINT SPACE
-00C0CD  1  20 00 C1     	JSR ECHO
-00C0D0  1  A1 10        	LDA (XAML,X)		;GET DATA FROM ADDRESS(X=0)
-00C0D2  1  20 ED C0     	JSR PRBYTE		;OUTPUT IT IN HEX FORMAT
-00C0D5  1  86 17        XAMNEXT:	STX MODE	;0->MODE(XAM MODE)
-00C0D7  1  A5 10        	LDA XAML		;SEE IF THERE'S MORE TO PRINT
-00C0D9  1  C5 14        	CMP L
-00C0DB  1  A5 11        	LDA XAMH
-00C0DD  1  E5 15        	SBC H
-00C0DF  1  B0 BD        	BCS TONXTITM		;NOT LESS! NO MORE DATA TO OUTPUT
-00C0E1  1               
-00C0E1  1  E6 10        	INC XAML		;INCREMENT 'EXAMING INDEX'
-00C0E3  1  D0 02        	BNE MOD8CHK		;NO CARRY!
-00C0E5  1  E6 11        	INC XAMH
-00C0E7  1               
-00C0E7  1  A5 10        MOD8CHK:	LDA XAML	;IF ADDRESS MOD8=0 START NEW LINE
-00C0E9  1  29 07        	AND #%00000111		;8 VALUES PER ROW
-00C0EB  1  10 CA        	BPL NXTPRNT		;ALWAYS TAKEN
-00C0ED  1               
-00C0ED  1               ;-------------------------------------------------------------------------
-00C0ED  1               ;  Subroutine to print a byte in A in hex form (destructive)
-00C0ED  1               ;-------------------------------------------------------------------------
-00C0ED  1               
-00C0ED  1  48           PRBYTE:	PHA			;SAVE A FOR LSD
-00C0EE  1  4A           	LSR
-00C0EF  1  4A           	LSR
-00C0F0  1  4A           	LSR			;MSD TO LSD
-00C0F1  1  4A           	LSR
-00C0F2  1  20 F6 C0     	JSR PRHEX		;OUTPUT HEX DIGIT
-00C0F5  1  68           	PLA			;RESTORE A
-00C0F6  1               
-00C0F6  1               ; FALL THROUGH TO PRINT HEX ROUTING
-00C0F6  1               
-00C0F6  1               ;-------------------------------------------------------------------------
-00C0F6  1               ;  Subroutine to print a hexadecimal digit
-00C0F6  1               ;-------------------------------------------------------------------------
-00C0F6  1               
-00C0F6  1  29 0F        PRHEX:	AND #$0F		;MASK LSD FOR HEX PRINT
-00C0F8  1  09 30        	ORA #'0'		;ADD "0"
-00C0FA  1  C9 3A        	CMP #'9'+1		;DIGIT?
-00C0FC  1  90 02        	BCC ECHO		;YES, OUTPUT IT
-00C0FE  1  69 06        	ADC #$06		;ADD OFFSET FOR LETTER
-00C100  1               
-00C100  1               ; Fall through to print routine
-00C100  1               
-00C100  1               ;-------------------------------------------------------------------------
-00C100  1               ;  Subroutine to print a character to the terminal
-00C100  1               ;-------------------------------------------------------------------------
-00C100  1               
-00C100  1  48           ECHO:	PHA			;PUSH A TO STACK
-00C101  1  20 00 FF     	JSR COUT		;COUT
-00C104  1  68             	PLA			;PULL A FROM STACK
-00C105  1  60           	RTS
-00C106  1               
-00C106  1  A0 00        SHWMSG:	LDY #$0			;INITIALIZE COUNTER
-00C108  1  B1 18        PRINT:	LDA (STRL),Y		;LOAD NEXT CHAR
-00C10A  1  F0 06        	BEQ DONE		;GOTO DONE IF 0, ELSE
-00C10C  1  20 00 C1     	JSR ECHO		;SEND CHAR TO SCREEN
-00C10F  1  C8           	INY			;INCREMENT COUNTER
-00C110  1  D0 F6        	BNE PRINT		;LOOP FOR NEXT CHAR
-00C112  1  60           DONE:	RTS			;RETURN TO CALLER
-00C113  1               
-00C113  1  A9 0A        CRLF:	LDA #LF
-00C115  1  20 00 C1     	JSR ECHO		;SEND LF
-00C118  1  A9 0D        	LDA #CR
-00C11A  1  20 00 C1     	JSR ECHO		;SEND CR
-00C11D  1  60           	RTS
-00C11E  1               
-00C11E  1  0D 0A        MSG1:	.byte CR,LF
-00C120  1  57 45 4C 43  	.byte "WELCOME TO GAKMON V1.0"
-00C124  1  4F 4D 45 20  
-00C128  1  54 4F 20 47  
-00C136  1  0D 0A        	.byte CR,LF
-00C138  1  20 20 20 20  	.byte "    By Glenn Klaas"
-00C13C  1  42 79 20 47  
-00C140  1  6C 65 6E 6E  
-00C14A  1  0D 0A 0D 0A  	.byte CR,LF,CR,LF,0
-00C14E  1  00           
-00C14F  1               
-00C14F  1               ;-------------------------------------------------------------------------
-00C14F  1               ; CORE IO HANDLING ROUTINES
-00C14F  1               ;-------------------------------------------------------------------------
-00C14F  1               
-00C14F  1               .segment "IOHANDLER"
-00C14F  1               .org $FF00
+00C04D  1  C9 2E            CMP #'.'			;are we setting block xam?
+00C04F  1  D0 04        	BNE BLSKIP			;no, continue
+00C051  1  09 80        	ORA #$80			;yes, set the high bit
+00C053  1  85 17        	STA MODE			;update mode
+00C055  1               
+00C055  1  C8           BLSKIP:	INY			;ADVACE TEXT INDEX
+00C056  1               
+00C056  1  B9 00 02     NEXTITEM: LDA IN,Y		;GET CHARACTER
+00C059  1  C9 0D        	CMP #CR
+00C05B  1  F0 C9        	BEQ GETLINE		;WE'RE DONE IF IT'S CR!
+00C05D  1  C9 2E        	CMP #'.'		; $2E 00101110
+00C05F  1  90 F4        	BCC BLSKIP		;IGNORE EVERYTHING LESS THAN "."!
+00C061  1  F0 E8        	BEQ SETMODE		;IF EQ, SET BLOCK XAM MODE ("."=$2E)
+00C063  1  C9 3A        	CMP #':'		; $3A 00111010
+00C065  1  F0 E3        	BEQ SETSTOR		;SET STOR MODE! #$3A WILL BECOM $74
+00C067  1  C9 52        	CMP #'R'
+00C069  1  F0 3E        	BEQ RUN			;RUN THE PROGRAM! FORGET THE REST
+00C06B  1  86 14        	STX L			;CLEAR INPUT VALUE (X=0)
+00C06D  1  86 15        	STX H
+00C06F  1  84 16        	STY YSAV		;SAVE Y FOR COMPARISON
+00C071  1               
+00C071  1               ; HERE WE'RE TRYING TO PARSE A NEW HEX VALUE
+00C071  1               
+00C071  1  B9 00 02     NEXTHEX: LDA IN,Y		;GET CHARACTER FOR HEX TEST
+00C074  1  49 30        	EOR #$30		;MAP DIGITS 0-9
+00C076  1  C9 0A        	CMP #$0A		;IS IT A DECIMAL DIGIT?
+00C078  1  90 06        	BCC DIG			;YES, PROCESS THE DIGIT
+00C07A  1  69 88        	ADC #$88		;MAP LETTER "A"-"F" TO $FA-FF
+00C07C  1  C9 FA        	CMP #$FA		;IS IT A HEX LETTER?
+00C07E  1  90 11        	BCC NOTHEX		;NO, CHARACTER NOT HEX OR CONTINUE
+00C080  1               
+00C080  1  0A           DIG:	ASL
+00C081  1  0A           	ASL			;HEX DIGIT TO MSD OF A
+00C082  1  0A           	ASL
+00C083  1  0A           	ASL
+00C084  1               
+00C084  1  A2 04        	LDX #$04		;SHIFT COUNT
+00C086  1  0A           HEXSHIFT: ASL			;HEX DIGIT LEFT, MSB TO CARRY
+00C087  1  26 14        	ROL L			;ROTATE INTO LSD
+00C089  1  26 15        	ROL H			;ROTATE INTO MSD'S
+00C08B  1  CA           	DEX			;DONE 4 SHIFTS?
+00C08C  1  D0 F8        	BNE HEXSHIFT		;NO, LOOP
+00C08E  1  C8           	INY			;ADVANCE TEXT INDEX
+00C08F  1  D0 E0        	BNE NEXTHEX		;ALWAYS TAKEN
+00C091  1               
+00C091  1  C4 16        NOTHEX:	CPY YSAV		;WAS AT LEAST 1 HEX DIGIT GIVEN?
+00C093  1  D0 03        	BNE NOESCAPE		;NO! IGNORE ALL,START FROM SCRATCH
+00C095  1  4C 21 C0     	JMP ESCAPE
+00C098  1               
+00C098  1  24 17        NOESCAPE: BIT MODE
+00C09A  1  50 16        	BVC NOTSTOR
+00C09C  1  A5 14        	LDA L			;LSD'S OF HEX DATA
+00C09E  1  81 12        	STA (STL,X)		;STORE CUR 'STORE INDEX'(X=0)
+00C0A0  1  E6 12        	INC STL			;INCREMENT STORE INDEX
+00C0A2  1  D0 B2        	BNE NEXTITEM		;NO CARRY!
+00C0A4  1  E6 13        	INC STH			;ADD CARRY TO 'STORE INDEX' HIGH
+00C0A6  1  4C 56 C0     TONXTITM: JMP NEXTITEM		;GET NEXT COMMAND ITEM
+00C0A9  1               
+00C0A9  1               ;-------------------------------------------------------------------------
+00C0A9  1               ;  RUN USERS PROGRAM FROM THE LAST OPENED LOCATION
+00C0A9  1               ;-------------------------------------------------------------------------
+00C0A9  1               
+00C0A9  1  20 AF C0     RUN:	JSR ACTRUN		;RUN USER'S PRORAM
+00C0AC  1  4C 14 C0     	JMP SFTRST		;SOFT RESET ON RETURN
+00C0AF  1               
+00C0AF  1  6C 10 00     ACTRUN:	JMP (XAML)
+00C0B2  1               
+00C0B2  1               ;-------------------------------------------------------------------------
+00C0B2  1               ;  We're not in Store mode
+00C0B2  1               ;-------------------------------------------------------------------------
+00C0B2  1               
+00C0B2  1  30 29        NOTSTOR:	BMI XAMNEXT	;B7=0 FOR XAM, 1 FOR BLOCK XAM
+00C0B4  1               
+00C0B4  1               ;WE'RE IN XAM MODE NOW
+00C0B4  1               
+00C0B4  1  A2 02        	LDX #$02		;COPY 2 BYTES
+00C0B6  1  B5 13        SETADR:	LDA L-1,X		;COPY HEX DATA TO
+00C0B8  1  95 11        	STA STL-1,X		;store index'
+00C0BA  1  95 0F        	STA XAML-1,X		;AND TO 'XAM INDEX'
+00C0BC  1  CA           	DEX			;NEXT OF 2 BYTES
+00C0BD  1  D0 F7        	BNE SETADR		;LOOP UNLESS X=0
+00C0BF  1               
+00C0BF  1               ; PRINT ADDR & DATA FROM THIS ADDR, FALL THRU NEXT BNE
+00C0BF  1               
+00C0BF  1  D0 12        NXTPRNT:	BNE PRDATA	;NE MEANS NO ADDRESS TO PRINT
+00C0C1  1  20 1B C1     	JSR CRLF
+00C0C4  1  A5 11        	LDA XAMH		;OUTPUT HIGH-ORDER BYTE OF ADDR
+00C0C6  1  20 F5 C0     	JSR PRBYTE
+00C0C9  1  A5 10        	LDA XAML		;OUTPUT LOW-ORDER BYTE OF ADDR
+00C0CB  1  20 F5 C0     	JSR PRBYTE
+00C0CE  1  A9 3A        	LDA #':'		;PRINT COLON
+00C0D0  1  20 08 C1     	JSR ECHO
+00C0D3  1               
+00C0D3  1  A9 20        PRDATA:	LDA #' '		;PRINT SPACE
+00C0D5  1  20 08 C1     	JSR ECHO
+00C0D8  1  A1 10        	LDA (XAML,X)		;GET DATA FROM ADDRESS(X=0)
+00C0DA  1  20 F5 C0     	JSR PRBYTE		;OUTPUT IT IN HEX FORMAT
+00C0DD  1  86 17        XAMNEXT:	STX MODE	;0->MODE(XAM MODE)
+00C0DF  1  A5 10        	LDA XAML		;SEE IF THERE'S MORE TO PRINT
+00C0E1  1  C5 14        	CMP L
+00C0E3  1  A5 11        	LDA XAMH
+00C0E5  1  E5 15        	SBC H
+00C0E7  1  B0 BD        	BCS TONXTITM		;NOT LESS! NO MORE DATA TO OUTPUT
+00C0E9  1               
+00C0E9  1  E6 10        	INC XAML		;INCREMENT 'EXAMING INDEX'
+00C0EB  1  D0 02        	BNE MOD8CHK		;NO CARRY!
+00C0ED  1  E6 11        	INC XAMH
+00C0EF  1               
+00C0EF  1  A5 10        MOD8CHK:	LDA XAML	;IF ADDRESS MOD8=0 START NEW LINE
+00C0F1  1  29 07        	AND #%00000111		;8 VALUES PER ROW
+00C0F3  1  10 CA        	BPL NXTPRNT		;ALWAYS TAKEN
+00C0F5  1               
+00C0F5  1               ;-------------------------------------------------------------------------
+00C0F5  1               ;  Subroutine to print a byte in A in hex form (destructive)
+00C0F5  1               ;-------------------------------------------------------------------------
+00C0F5  1               
+00C0F5  1  48           PRBYTE:	PHA			;SAVE A FOR LSD
+00C0F6  1  4A           	LSR
+00C0F7  1  4A           	LSR
+00C0F8  1  4A           	LSR			;MSD TO LSD
+00C0F9  1  4A           	LSR
+00C0FA  1  20 FE C0     	JSR PRHEX		;OUTPUT HEX DIGIT
+00C0FD  1  68           	PLA			;RESTORE A
+00C0FE  1               
+00C0FE  1               ; FALL THROUGH TO PRINT HEX ROUTING
+00C0FE  1               
+00C0FE  1               ;-------------------------------------------------------------------------
+00C0FE  1               ;  Subroutine to print a hexadecimal digit
+00C0FE  1               ;-------------------------------------------------------------------------
+00C0FE  1               
+00C0FE  1  29 0F        PRHEX:	AND #$0F		;MASK LSD FOR HEX PRINT
+00C100  1  09 30        	ORA #'0'		;ADD "0"
+00C102  1  C9 3A        	CMP #'9'+1		;DIGIT?
+00C104  1  90 02        	BCC ECHO		;YES, OUTPUT IT
+00C106  1  69 06        	ADC #$06		;ADD OFFSET FOR LETTER
+00C108  1               
+00C108  1               ; Fall through to print routine
+00C108  1               
+00C108  1               ;-------------------------------------------------------------------------
+00C108  1               ;  Subroutine to print a character to the terminal
+00C108  1               ;-------------------------------------------------------------------------
+00C108  1               
+00C108  1  48           ECHO:	PHA			;PUSH A TO STACK
+00C109  1  20 00 FF     	JSR COUT		;COUT
+00C10C  1  68             	PLA			;PULL A FROM STACK
+00C10D  1  60           	RTS
+00C10E  1               
+00C10E  1  A0 00        SHWMSG:	LDY #$0			;INITIALIZE COUNTER
+00C110  1  B1 18        PRINT:	LDA (STRL),Y		;LOAD NEXT CHAR
+00C112  1  F0 06        	BEQ DONE		;GOTO DONE IF 0, ELSE
+00C114  1  20 08 C1     	JSR ECHO		;SEND CHAR TO SCREEN
+00C117  1  C8           	INY			;INCREMENT COUNTER
+00C118  1  D0 F6        	BNE PRINT		;LOOP FOR NEXT CHAR
+00C11A  1  60           DONE:	RTS			;RETURN TO CALLER
+00C11B  1               
+00C11B  1  A9 0A        CRLF:	LDA #LF
+00C11D  1  20 08 C1     	JSR ECHO		;SEND LF
+00C120  1  A9 0D        	LDA #CR
+00C122  1  20 08 C1     	JSR ECHO		;SEND CR
+00C125  1  60           	RTS
+00C126  1               
+00C126  1  0D 0A        MSG1:	.byte CR,LF
+00C128  1  57 45 4C 43  	.byte "WELCOME TO GAKMON V1.0"
+00C12C  1  4F 4D 45 20  
+00C130  1  54 4F 20 47  
+00C13E  1  0D 0A        	.byte CR,LF
+00C140  1  20 20 20 20  	.byte "    By Glenn Klaas"
+00C144  1  42 79 20 47  
+00C148  1  6C 65 6E 6E  
+00C152  1  0D 0A 0D 0A  	.byte CR,LF,CR,LF,0
+00C156  1  00           
+00C157  1               
+00C157  1               ;-------------------------------------------------------------------------
+00C157  1               ; CORE IO HANDLING ROUTINES
+00C157  1               ;-------------------------------------------------------------------------
+00C157  1               
+00C157  1               .segment "IOHANDLER"
+00C157  1               .org $FF00
 00FF00  1               
 00FF00  1  48           COUT:	PHA
 00FF01  1  AD 00 A0     ACIAWAIT:	LDA ACIAStatus
