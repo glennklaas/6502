@@ -1,5 +1,5 @@
 ;GAKMON v1.0 - 6502 Monitor
-	.ORG $600
+	.ORG $300
 	
 ;Simulator IO
 io_area	= $e000
@@ -412,20 +412,16 @@ MSG1:
 ;****************************
 ;***** Monitor Routines *****
 ;****************************
-
+	.ORG	$FF00
 COUT:
 	PHA
 
 	STA	io_putc
 
 	RTS
-
+	
+	.ORG	$FF1F
 RDKEY:	LDA 	io_getc
 	BEQ 	RDKEY
 	RTS
 	
-NoDataIn:
-	
-	CLC			; Carry clear if no key pressed
-	
-	RTS
