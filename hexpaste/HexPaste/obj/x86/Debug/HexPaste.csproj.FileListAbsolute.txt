@@ -1,0 +1,14 @@
+C:\Projects\HexPaste\HexPaste\bin\Debug\HexPaste.exe
+C:\Projects\HexPaste\HexPaste\bin\Debug\HexPaste.pdb
+C:\Projects\HexPaste\HexPaste\obj\x86\Debug\HexPaste.Form1.resources
+C:\Projects\HexPaste\HexPaste\obj\x86\Debug\HexPaste.Properties.Resources.resources
+C:\Projects\HexPaste\HexPaste\obj\x86\Debug\HexPaste.csproj.GenerateResource.Cache
+C:\Projects\HexPaste\HexPaste\obj\x86\Debug\HexPaste.exe
+C:\Projects\HexPaste\HexPaste\obj\x86\Debug\HexPaste.pdb
+C:\Projects\6502\hexpaste\HexPaste\obj\x86\Debug\HexPaste.exe
+C:\Projects\6502\hexpaste\HexPaste\obj\x86\Debug\HexPaste.pdb
+C:\Projects\6502\hexpaste\HexPaste\bin\Debug\HexPaste.exe
+C:\Projects\6502\hexpaste\HexPaste\bin\Debug\HexPaste.pdb
+C:\Projects\6502\hexpaste\HexPaste\obj\x86\Debug\HexPaste.Form1.resources
+C:\Projects\6502\hexpaste\HexPaste\obj\x86\Debug\HexPaste.Properties.Resources.resources
+C:\Projects\6502\hexpaste\HexPaste\obj\x86\Debug\HexPaste.csproj.GenerateResource.Cache
