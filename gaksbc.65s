@@ -414,8 +414,6 @@ MSG1:
 ;****************************
 	.ORG	$FF00
 COUT:
-	PHA
-
 	STA	io_putc
 
 	RTS
