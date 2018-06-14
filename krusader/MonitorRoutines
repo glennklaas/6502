@@ -1,0 +1,2 @@
+COUT    EQU $FFD2
+RDKEY   EQU $FFF1
