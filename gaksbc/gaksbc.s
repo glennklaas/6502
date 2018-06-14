@@ -271,11 +271,20 @@ MSG1:	.byte CR,LF
 	.byte CR,LF,CR,LF,0
 
 ;-------------------------------------------------------------------------
+; KRUSADER
+;-------------------------------------------------------------------------
+;.segment "KRUSADER"
+.org $F000
+
+
+
+
+
+;-------------------------------------------------------------------------
 ; CORE IO HANDLING ROUTINES
 ;-------------------------------------------------------------------------
-
 .segment "IOHANDLER"
-.org $FF00
+;.org $FF00
 
 COUT:	PHA
 ACIAWAIT:	LDA ACIAStatus
@@ -303,9 +312,9 @@ RDKEY:	JSR MONRDKEY		;Check if key was pressed
 ;-------------------------------------------------------------------------
 ;  Vector area
 ;-------------------------------------------------------------------------
-
 .segment "VECTS"
-.org $FFFA
+;.org $FFFA
+
 	.word RESET		;NMI 
 	.word RESET		;RESET 
 	.word RESET		;IRQ 

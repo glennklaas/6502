@@ -578,7 +578,7 @@ L2300:
         dex
         bpl     L2300
         jsr     GARBAG
-        ldx     #TEMP1-FAC+1
+        ldx     #TEMP1-FAC+1 +256 ;GAK
 L230B:
         pla
         sta     FAC,x
@@ -4458,7 +4458,7 @@ FDIVT:
         jsr     ADD_EXPONENTS
         inc     FAC
         beq     JOV
-        ldx     #-MANTISSA_BYTES
+        ldx     #-MANTISSA_BYTES +256 ;GAK
         lda     #$01
 L39A1:
         ldy     ARG+1
@@ -5009,7 +5009,7 @@ L3C8C:
         lda     #<CON_BILLION
         ldy     #>CON_BILLION
         jsr     FMULT
-        lda     #-6 ; exponent adjustment
+        lda     #-6 +256; GAK exponent adjustment
 L3C95:
         sta     INDX
 ; ----------------------------------------------------------------------------
