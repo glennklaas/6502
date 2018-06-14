@@ -2,6 +2,7 @@
 *.o
 *.lst
 *.bin
+*.map
 .DS_Store
 .vscode
 backups
