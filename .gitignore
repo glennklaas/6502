@@ -2,5 +2,7 @@
 *.o
 *.lst
 *.bin
+.DS_Store
+.vscode
 backups
 nongitdocs
